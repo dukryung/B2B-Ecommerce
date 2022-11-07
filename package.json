@@ -1,0 +1,16 @@
+{
+  "name": "B2B-Ecommerce",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "repository": "https://github.com/dukryung/B2B-Ecommerce",
+  "author": "dukryung <dukryung@gmail.com>",
+  "dependencies": {
+    "express": "^4.18.2",
+    "postgresql-client": "^2.5.1",
+    "pg": "^8.8.0",
+    "cors": "^2.8.5"
+  }
+}
