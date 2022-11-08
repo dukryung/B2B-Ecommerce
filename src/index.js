@@ -1,14 +1,15 @@
 const express = require('express');
-const postgresql = require('pg');
 const http = require('http');
-const routes = require('./routes')
+require('./utils/database').createConnection();
+const routes = require('./routes');
+const cors = require('cors');
 
 const app = express();
+app.use(express.json());
+
 const server = http.Server(app);
 
-postgresql.Connection("uri", "option");
-
-app.use(express.json());
 app.use(routes);
+app.use(cors)
 
 server.listen("10002");
