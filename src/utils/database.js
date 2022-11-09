@@ -1,24 +1,17 @@
-const {Client} = require('pg')
-var connection;
+const {Pool} = require('pg')
 
 
-module.exports = {
-    getConnection: function () {
-        return connection
-    },
-    createConnection: function (){
-        const client = new Client({
-            user: 'postgres',
-            host: 'localhost',
-            database: 'B2B-DB',
-            password: 'qwer1234',
-            port: 10003,
-        })
+module.exports.getPool = async () => {
+    const pool = new Pool({
+        user: 'postgres',
+        host: 'localhost',
+        database: 'B2B-DB',
+        password: 'qwer1234',
+        port: 10003,
+    })
 
-        connection = client.connect()
-
-        return connection
-    }
+    await pool.connect();
+    return pool;
 }
 
 

@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS public.users
     name character varying(20) COLLATE pg_catalog."default" NOT NULL,
     attribute integer NOT NULL,
     authority integer NOT NULL,
+    grade integer NOT NULL DEFAULT 0,
     CONSTRAINT users_pkey PRIMARY KEY (id)
 )
 
