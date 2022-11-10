@@ -8,8 +8,10 @@ CREATE TABLE IF NOT EXISTS public.deal_log
     user_id bigint NOT NULL,
     type character varying(4) COLLATE pg_catalog."default" NOT NULL,
     trader_id bigint NOT NULL,
+    create_time timestamp without time zone NOT NULL DEFAULT now(),
+    update_time timestamp without time zone NOT NULL DEFAULT now(),
     CONSTRAINT deal_log_pkey PRIMARY KEY (id, user_id)
-    )
+)
 
     TABLESPACE pg_default;
 

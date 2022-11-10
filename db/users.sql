@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS public.users
     attribute integer NOT NULL,
     authority integer NOT NULL,
     grade integer NOT NULL DEFAULT 0,
+    create_time timestamp without time zone NOT NULL DEFAULT now(),
+    update_time timestamp without time zone NOT NULL DEFAULT now(),
     CONSTRAINT users_pkey PRIMARY KEY (id)
 )
 

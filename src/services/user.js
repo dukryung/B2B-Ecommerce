@@ -1,50 +1,83 @@
+const parse = require('../utils/parse')
 const user = new Object();
 const db = new Object();
-const form = {
-    success: null,
-    message: null,
-    data: null,
-}
 
 user.init = function (pool) {
     db.pool = pool
 }
 
-user.getUsers = async function (req, res) {
-    var result = new Object(form)
+user.readUsers = async function (req, res) {
     try {
-        const data = await db.pool.query('SELECT (id, name, attribute, authority, grade) FROM users')
-        result.success = true
-        result.data = data.rows
-        res.status(200).json(result)
+        const data = await db.pool.query(`
+            SELECT id,
+                   name,
+                   attribute,
+                   authority,
+                   grade
+            FROM users`)
+
+        console.log("data ", data)
+        res.status(200).json(parse.resBody(true, null, data.rows))
     } catch (e) {
         console.error(e)
-        result.success = false
-        result.message = e.toString()
-        res.status(505).json(result)
+        res.status(505).json(parse.resBody(false, e.toString(), null))
     }
 }
 
-user.getUserById = async function (req, res) {
-    res.send("get User By Name!!!")
-}
-user.getUserByName = async function (req, res) {
-    res.send("get User By Name!!!")
-}
-user.updateUser = async function (req, res) {
-    res.send("get Users!!!")
-}
-user.insertUser = async function (req, res) {
+user.readUserById = async function (req, res) {
+    const id = req.params.id
     try {
-        await db.connection.query('INSERT INTO users (name, attribute,authority) VALUES ($1, $2,$3) RETURNING *', [req.body.name, req.body.attribute, req.body.authority])
-        res.status(200).send(`insert Users`)
+        const data = await db.pool.query(`SELECT id, name, attribute, authority, grade
+                                          FROM users
+                                          WHERE id = $1`, [id])
+        res.status(200).json(parse.resBody(true, null, data.rows))
     } catch (e) {
         console.error(e)
-        res.status(505).send(`failed to insert user's data`)
+        res.status(505).json(parse.resBody(false, e.toString(), null))
     }
 }
-user.deleteUser = async function (req, res) {
-    res.send("get Users!!!")
+user.readUserByName = async function (req, res) {
+    const name = req.params.name
+    try {
+        const data = await db.pool.query(`SELECT id, name, attribute, authority, grade
+                                          FROM users
+                                          WHERE name = $1`, [name])
+        res.status(200).json(parse.resBody(true, null, data.rows))
+    } catch (e) {
+        console.error(e)
+        res.status(505).json(parse.resBody(false, e.toString(), null))
+    }
+}
+
+user.updateUserById = async function (req, res) {
+    const body = parse.reqUserBody(req.body)
+    try {
+        await db.pool.query(`UPDATE users
+                             SET name        = COALESCE($1, name),
+                                 attribute   = COALESCE($2, attribute),
+                                 authority   = COALESCE($3, authority),
+                                 grade       = COALESCE($4, grade),
+                                 update_time = Now()
+                             WHERE id = $5`, [body.name, body.attribute, body.authority, body.grade, body.id])
+        res.status(200).json(parse.resBody(true, null, null))
+    } catch (e) {
+        console.error(e)
+        res.status(505).json(parse.resBody(false, e.toString(), null))
+    }
+}
+user.createUser = async function (req, res) {
+    const body = parse.reqUserBody(req.body)
+    try {
+        await db.pool.query(`INSERT INTO users (name, attribute, authority, create_time, update_time)
+                             VALUES ($1, $2,
+                                     $3, Now(),
+                                     Now()) RETURNING *`, [body.name, body.attribute, body.authority])
+
+        res.status(200).json(parse.resBody(true, null, null))
+    } catch (e) {
+        console.error(e)
+        res.status(505).json(parse.resBody(false, e.toString(), null))
+    }
 }
 
 module.exports = user

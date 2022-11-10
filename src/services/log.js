@@ -1,30 +1,60 @@
+const parse = require('../utils/parse')
 const log = new Object();
 const db = new Object();
-const form = {
-    success: null,
-    message: null,
-    data: null,
+
+log.init = function (pool) {
+    db.pool = pool
 }
 
-log.init = function (connectionDB) {
-    db.connection = connectionDB
-}
-
-log.getDealLogById = async function (req, res) {
-    var result = new Object(form)
-    const id = req.params.id
+log.readLogs = async function (req, res) {
     try {
-        await db.connection.query('select (id,type,trade_id) from deal_log where user_id = $1)', [id], (error, results)=>{
-            result.success = true
-            result.code = 200
-            result.data = results.rows
+        const data = await db.pool.query(`
+            SELECT id,
+                   type,
+                   trader_id,
+                   create_time,
+                   update_time
+            FROM deal_log`)
 
-            res.status(200).json(result)
-        })
-
-
+        console.log("data ", data)
+        res.status(200).json(parse.resBody(true, null, data.rows))
     } catch (e) {
         console.error(e)
+        res.status(505).json(parse.resBody(false, e.toString(), null))
+    }
+}
+
+log.readLogsById = async function (req, res) {
+    try {
+        const data = await db.pool.query(`
+            SELECT id,
+                   type,
+                   trader_id,
+                   create_time,
+                   update_time
+            FROM deal_log
+            WHERE user_id = $1`, [req.params.id])
+
+        console.log("data ", data)
+        res.status(200).json(parse.resBody(true, null, data.rows))
+    } catch (e) {
+        console.error(e)
+        res.status(505).json(parse.resBody(false, e.toString(), null))
+    }
+}
+
+log.createLogs = async function (req, res) {
+    const body = parse.reqLogBody(req.body)
+    try {
+        await db.pool.query(`INSERT INTO deal_log (user_id, type, trader_id, create_time, update_time)
+                             VALUES ($1, $2,
+                                     $3, Now(),
+                                     Now()) RETURNING *`, [body.user_id, body.type, body.trader_id])
+
+        res.status(200).json(parse.resBody(true, null, null))
+    } catch (e) {
+        console.error(e)
+        res.status(505).json(parse.resBody(false, e.toString(), null))
     }
 }
 
