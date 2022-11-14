@@ -60,7 +60,8 @@ const productForm = {
     user_id : null,
     name : null,
     amount : null,
-    location : null
+    location : null,
+    participants_id : null
 }
 
 parse.reqProductBody = function (reqBody) {
@@ -80,6 +81,9 @@ parse.reqProductBody = function (reqBody) {
     }
     if (reqBody.location !== undefined && reqBody.location !== null) {
         body.location = reqBody.location
+    }
+    if (reqBody.participants_id !== undefined && reqBody.participants_id !== null) {
+        body.participants_id = reqBody.participants_id
     }
 
     return body
@@ -102,6 +106,10 @@ parse.resBody = function (success, message, rows) {
     body.success = success
     body.data = rows
     return body
+}
+
+parse.StringAsArray = function (params){
+    return params.split(",").map(param => param.trim());
 }
 
 module.exports = parse

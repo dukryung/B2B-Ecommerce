@@ -10,7 +10,6 @@ module.exports.getPool = async () => {
         port: 10003,
     })
 
-    await pool.connect();
     return pool;
 }
 
