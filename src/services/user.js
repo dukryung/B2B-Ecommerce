@@ -7,7 +7,8 @@ user.init = function (pool) {
 }
 
 user.readUsers = async function (req, res) {
-    const poolClient = db.pool.connect()
+    const poolClient = await db.pool.connect();
+
     try {
         await poolClient.query('BEGIN');
         const data = await poolClient.query(`
@@ -30,7 +31,7 @@ user.readUsers = async function (req, res) {
 }
 
 user.readUserById = async function (req, res) {
-    const poolClient = db.pool.connect()
+    const poolClient = await db.pool.connect();
     const id = req.params.id
     try {
         await poolClient.query('BEGIN');
@@ -48,7 +49,7 @@ user.readUserById = async function (req, res) {
     }
 }
 user.readUserByName = async function (req, res) {
-    const poolClient = db.pool.connect()
+    const poolClient = await db.pool.connect();
     const name = req.params.name
     try {
         await poolClient.query('BEGIN');
@@ -67,7 +68,7 @@ user.readUserByName = async function (req, res) {
 }
 
 user.updateUserById = async function (req, res) {
-    const poolClient = db.pool.connect()
+    const poolClient = await db.pool.connect();
     const body = parse.reqUserBody(req.body)
     try {
         await poolClient.query('BEGIN');
@@ -89,7 +90,7 @@ user.updateUserById = async function (req, res) {
     }
 }
 user.createUser = async function (req, res) {
-    const poolClient = db.pool.connect()
+    const poolClient = await db.pool.connect();
     const body = parse.reqUserBody(req.body)
     try {
         await poolClient.query('BEGIN');

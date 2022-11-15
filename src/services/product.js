@@ -8,7 +8,7 @@ product.init = function (pool) {
 
 
 product.readProductById = async function (req, res) {
-    const poolClient = db.pool.connect()
+    const poolClient = await db.pool.connect();
     const id = req.params.id
     try {
         await poolClient.query('BEGIN');
@@ -26,7 +26,7 @@ product.readProductById = async function (req, res) {
     }
 }
 product.readProductByUserId = async function (req, res) {
-    const poolClient = db.pool.connect()
+    const poolClient = await db.pool.connect();
     const userId = req.params.user_id
     try {
         await poolClient.query('BEGIN');
@@ -45,7 +45,7 @@ product.readProductByUserId = async function (req, res) {
 }
 
 product.readProductByLocation = async function (req, res) {
-    const poolClient = db.pool.connect()
+    const poolClient = await db.pool.connect();
     const location = req.params.id
     try {
         await poolClient.query('BEGIN');
@@ -65,7 +65,7 @@ product.readProductByLocation = async function (req, res) {
 
 
 product.updateProductById = async function (req, res) {
-    const poolClient = db.pool.connect()
+    const poolClient = await db.pool.connect();
     const body = parse.reqProductBody(req.body)
     try {
         await poolClient.query('BEGIN');
@@ -87,7 +87,7 @@ product.updateProductById = async function (req, res) {
     }
 }
 product.createProduct = async function (req, res) {
-    const poolClient = db.pool.connect()
+    const poolClient = await db.pool.connect();
     const body = parse.reqProductBody(req.body)
     try {
         await poolClient.query('BEGIN');
@@ -107,7 +107,7 @@ product.createProduct = async function (req, res) {
 }
 
 product.deleteProductById = async function (req, res) {
-    const poolClient = db.pool.connect()
+    const poolClient = await db.pool.connect();
     const id = req.params.id
     try {
         await poolClient.query('BEGIN');
@@ -124,7 +124,7 @@ product.deleteProductById = async function (req, res) {
 }
 
 product.createParticipantsToAuction = async function (req, res) {
-    const poolClient = db.pool.connect()
+    const poolClient = await db.pool.connect();
     const body = parse.reqProductBody(req.body)
     try {
         await poolClient.query('BEGIN');

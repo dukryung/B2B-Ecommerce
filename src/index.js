@@ -1,6 +1,5 @@
 const express = require('express');
-const http = require('http');
-const websocket = require('./websocket')
+const ws = require('./websocket')
 const {getPool} = require('./utils/database');
 const serviceUser = require('./services/user')
 const serviceLog = require('./services/log')
@@ -8,11 +7,11 @@ const serviceProduct = require('./services/product')
 const routes = require('./routes');
 const cors = require('cors');
 
-const app = express();
-app.use(express.json());
+const app = express().use((req, res) => res.sendFile('/public/index.html', {root: __dirname})).use(express.json()).use(cors)
+    .listen(10002, () => console.log(`Listening on ${10002}`));
 
-const server = http.createServer(app);
-websocket.init(server);
+const wsServer = ws.init(app);
+routes.init(wsServer);
 
 (async () => {
         try {
@@ -26,9 +25,3 @@ websocket.init(server);
         }
     }
 )();
-
-
-app.use(routes);
-app.use(cors)
-
-server.listen("10002");

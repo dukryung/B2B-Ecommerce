@@ -7,7 +7,7 @@ log.init = function (pool) {
 }
 
 log.readLogs = async function (req, res) {
-    const poolClient = db.pool.connect()
+    const poolClient = await db.pool.connect();
     try {
         await poolClient.query('BEGIN');
         const data = await poolClient.query(`
@@ -30,7 +30,7 @@ log.readLogs = async function (req, res) {
 }
 
 log.readLogsById = async function (req, res) {
-    const poolClient = db.pool.connect()
+    const poolClient = await db.pool.connect();
     try {
         await poolClient.query('BEGIN');
         const data = await poolClient.query(`
@@ -53,7 +53,7 @@ log.readLogsById = async function (req, res) {
 }
 
 log.createLogs = async function (req, res) {
-    const poolClient = db.pool.connect()
+    const poolClient = await db.pool.connect();
     const body = parse.reqLogBody(req.body)
     try {
         await poolClient.query('BEGIN');
