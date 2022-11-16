@@ -7,66 +7,62 @@ product.init = function (pool) {
 }
 
 
-product.readProductById = async function (req, res) {
+product.readProductById = async function (socket, msg) {
     const poolClient = await db.pool.connect();
-    const id = req.params.id
     try {
         await poolClient.query('BEGIN');
         const data = await poolClient.query(`SELECT user_id, name, amount, location, create_time, update_time
                                              FROM products
-                                             WHERE id = $1`, [id])
+                                             WHERE id = $1`, [msg.id])
         await poolClient.query('COMMIT');
-        res.status(200).json(parse.resBody(true, null, data.rows))
+        socket.send(JSON.stringify(parse.resBody(true, null, data.rows)))
     } catch (e) {
         console.error(e)
         await poolClient.query('ROLLBACK');
-        res.status(505).json(parse.resBody(false, e.toString(), null))
+        socket.send(JSON.stringify(parse.resBody(false, e.toString(), null)))
     } finally {
         poolClient.release();
     }
 }
-product.readProductByUserId = async function (req, res) {
+product.readProductByUserId = async function (socket, msg) {
     const poolClient = await db.pool.connect();
-    const userId = req.params.user_id
     try {
         await poolClient.query('BEGIN');
         const data = await poolClient.query(`SELECT id, name, amount, location, create_time, update_time
                                              FROM products
-                                             WHERE user_id = $1`, [userId])
+                                             WHERE user_id = $1`, [msg.user_id])
         await poolClient.query('COMMIT');
-        res.status(200).json(parse.resBody(true, null, data.rows))
+        socket.send(JSON.stringify(parse.resBody(true, null, data.rows)))
     } catch (e) {
         console.error(e)
         await poolClient.query('ROLLBACK');
-        res.status(505).json(parse.resBody(false, e.toString(), null))
+        socket.send(JSON.stringify(parse.resBody(false, e.toString(), null)))
     } finally {
         poolClient.release();
     }
 }
 
-product.readProductByLocation = async function (req, res) {
+product.readProductByLocation = async function (socket, msg) {
     const poolClient = await db.pool.connect();
-    const location = req.params.id
     try {
         await poolClient.query('BEGIN');
         const data = await poolClient.query(`SELECT id, name, amount, location, create_time, update_time
                                              FROM products
-                                             WHERE location = $1`, [location])
+                                             WHERE location = $1`, [msg.location])
         await poolClient.query('COMMIT');
-        res.status(200).json(parse.resBody(true, null, data.rows))
+        socket.send(JSON.stringify(parse.resBody(true, null, data.rows)))
     } catch (e) {
         console.error(e)
         await poolClient.query('ROLLBACK');
-        res.status(505).json(parse.resBody(false, e.toString(), null))
+        socket.send(JSON.stringify(parse.resBody(false, e.toString(), null)))
     } finally {
         poolClient.release();
     }
 }
 
 
-product.updateProductById = async function (req, res) {
+product.updateProductById = async function (socket, msg) {
     const poolClient = await db.pool.connect();
-    const body = parse.reqProductBody(req.body)
     try {
         await poolClient.query('BEGIN');
         await poolClient.query(`UPDATE products
@@ -75,69 +71,67 @@ product.updateProductById = async function (req, res) {
                                     location    = COALESCE($3, location),
                                     create_time = Now(),
                                     update_time = Now()
-                                WHERE id = $4`, [body.name, body.amount, body.location, body.id])
+                                WHERE id = $4`, [msg.name, msg.amount, msg.location, msg.id])
         await poolClient.query('COMMIT');
-        res.status(200).json(parse.resBody(true, null, null))
+        socket.send(JSON.stringify(parse.resBody(true, null, null)))
     } catch (e) {
         console.error(e)
         await poolClient.query('ROLLBACK');
-        res.status(505).json(parse.resBody(false, e.toString(), null))
+        socket.send(JSON.stringify(parse.resBody(false, e.toString(), null)))
     } finally {
         poolClient.release();
     }
 }
-product.createProduct = async function (req, res) {
+product.createProduct = async function (socket, msg) {
     const poolClient = await db.pool.connect();
-    const body = parse.reqProductBody(req.body)
+
     try {
         await poolClient.query('BEGIN');
         await poolClient.query(`INSERT INTO products (name, user_id, amount, location, create_time, update_time)
                                 VALUES ($1, $2,
                                         $3, $4, Now(),
-                                        Now()) RETURNING *`, [body.name, body.user_id, body.amount, body.location])
+                                        Now()) RETURNING *`, [msg.name, msg.user_id, msg.amount, msg.location])
         await poolClient.query('COMMIT');
-        res.status(200).json(parse.resBody(true, null, null))
+        socket.send(JSON.stringify(parse.resBody(true, null, null)))
     } catch (e) {
         console.error(e)
         await poolClient.query('ROLLBACK');
-        res.status(505).json(parse.resBody(false, e.toString(), null))
+        socket.send(JSON.stringify(parse.resBody(false, e.toString(), null)))
     } finally {
         poolClient.release();
     }
 }
 
-product.deleteProductById = async function (req, res) {
+product.deleteProductById = async function (socket, msg) {
     const poolClient = await db.pool.connect();
-    const id = req.params.id
     try {
         await poolClient.query('BEGIN');
-        const data = await poolClient.query('DELETE FROM products WHERE id = $1', [id])
+        const data = await poolClient.query('DELETE FROM products WHERE id = $1', [msg.id])
         await poolClient.query('COMMIT');
-        res.status(200).json(parse.resBody(true, null, data.rows))
+        socket.send(JSON.stringify(parse.resBody(true, null, data.rows)))
     } catch (e) {
         console.error(e)
         await poolClient.query('ROLLBACK');
-        res.status(505).json(parse.resBody(false, e.toString(), null))
+        socket.send(JSON.stringify(parse.resBody(false, e.toString(), null)))
     } finally {
         poolClient.release();
     }
 }
 
-product.createParticipantsToAuction = async function (req, res) {
+product.createParticipantsToAuction = async function (socket, msg) {
     const poolClient = await db.pool.connect();
-    const body = parse.reqProductBody(req.body)
     try {
         await poolClient.query('BEGIN');
         await poolClient.query(`INSERT INTO products (product_id, participants_id, amount, create_time, update_time)
                                 VALUES ($1, $2,
                                         $3, Now(),
-                                        Now()) RETURNING *`, [body.id, body.participants_id, body.amount])
+                                        Now()) RETURNING *`, [msg.id, msg.participants_id, msg.amount])
         await poolClient.query('COMMIT');
-        res.status(200).json(parse.resBody(true, null, null))
+        socket.send(JSON.stringify(parse.resBody(true, null, null)))
     } catch (e) {
         console.error(e)
         await poolClient.query('ROLLBACK');
-        res.status(505).json(parse.resBody(false, e.toString(), null))
+        socket.send(JSON.stringify(parse.resBody(false, e.toString(), null)))
     }finally {
         poolClient.release();
     }

@@ -6,7 +6,7 @@ user.init = function (pool) {
     db.pool = pool
 }
 
-user.readUsers = async function (req, res) {
+user.readUsers = async function (socket, msg) {
     const poolClient = await db.pool.connect();
 
     try {
@@ -20,56 +20,55 @@ user.readUsers = async function (req, res) {
             FROM users`)
 
         await poolClient.query('COMMIT');
-        res.status(200).json(parse.resBody(true, null, data.rows))
+        socket.send(JSON.stringify(parse.resBody(true, null, data.rows)))
     } catch (e) {
         console.error(e)
         await poolClient.query('ROLLBACK');
-        res.status(505).json(parse.resBody(false, e.toString(), null))
+        socket.send(JSON.stringify(parse.resBody(false, e.toString(), null)))
     } finally {
         poolClient.release();
     }
 }
 
-user.readUserById = async function (req, res) {
+user.readUserById = async function (socket, msg) {
     const poolClient = await db.pool.connect();
-    const id = req.params.id
+    console.log("msg : ",msg.id)
     try {
         await poolClient.query('BEGIN');
         const data = await poolClient.query(`SELECT id, name, attribute, authority, grade
                                              FROM users
-                                             WHERE id = $1`, [id])
+                                             WHERE id = $1`, [msg.id])
         await poolClient.query('COMMIT');
-        res.status(200).json(parse.resBody(true, null, data.rows))
+        socket.send(JSON.stringify(parse.resBody(true, null, data.rows)))
     } catch (e) {
         console.error(e)
         await poolClient.query('ROLLBACK');
-        res.status(505).json(parse.resBody(false, e.toString(), null))
+        socket.send(JSON.stringify(parse.resBody(false, e.toString(), null)))
     } finally {
         poolClient.release();
     }
 }
-user.readUserByName = async function (req, res) {
+user.readUserByName = async function (socket, msg) {
     const poolClient = await db.pool.connect();
-    const name = req.params.name
     try {
         await poolClient.query('BEGIN');
         const data = await poolClient.query(`SELECT id, name, attribute, authority, grade
                                              FROM users
-                                             WHERE name = $1`, [name])
+                                             WHERE name = $1`, [msg.name])
         await poolClient.query('COMMIT');
-        res.status(200).json(parse.resBody(true, null, data.rows))
+        socket.send(JSON.stringify(parse.resBody(true, null, data.rows)))
     } catch (e) {
         console.error(e)
         await poolClient.query('ROLLBACK');
-        res.status(505).json(parse.resBody(false, e.toString(), null))
+        socket.send(JSON.stringify(parse.resBody(false, e.toString(), null)))
     } finally {
         poolClient.release();
     }
 }
 
-user.updateUserById = async function (req, res) {
+user.updateUserById = async function (socket, msg) {
     const poolClient = await db.pool.connect();
-    const body = parse.reqUserBody(req.body)
+    //const body = parse.reqUserBody(req.body)
     try {
         await poolClient.query('BEGIN');
         await poolClient.query(`UPDATE users
@@ -78,32 +77,31 @@ user.updateUserById = async function (req, res) {
                                     authority   = COALESCE($3, authority),
                                     grade       = COALESCE($4, grade),
                                     update_time = Now()
-                                WHERE id = $5`, [body.name, body.attribute, body.authority, body.grade, body.id])
+                                WHERE id = $5`, [msg.name, msg.attribute, msg.authority, msg.grade, msg.id])
         await poolClient.query('COMMIT');
-        res.status(200).json(parse.resBody(true, null, null))
+        socket.send(JSON.stringify(parse.resBody(true, null, null)))
     } catch (e) {
         console.error(e)
         await poolClient.query('ROLLBACK');
-        res.status(505).json(parse.resBody(false, e.toString(), null))
+        socket.send(JSON.stringify(parse.resBody(false, e.toString(), null)))
     } finally {
         poolClient.release();
     }
 }
-user.createUser = async function (req, res) {
+user.createUser = async function (socket, msg) {
     const poolClient = await db.pool.connect();
-    const body = parse.reqUserBody(req.body)
     try {
         await poolClient.query('BEGIN');
         await poolClient.query(`INSERT INTO users (name, attribute, authority, create_time, update_time)
                                 VALUES ($1, $2,
                                         $3, Now(),
-                                        Now()) RETURNING *`, [body.name, body.attribute, body.authority])
+                                        Now()) RETURNING *`, [msg.name, msg.attribute, msg.authority])
         await poolClient.query('COMMIT');
-        res.status(200).json(parse.resBody(true, null, null))
+        socket.send(JSON.stringify(parse.resBody(true, null, null)))
     } catch (e) {
         console.error(e)
         await poolClient.query('ROLLBACK');
-        res.status(505).json(parse.resBody(false, e.toString(), null))
+        socket.send(JSON.stringify(parse.resBody(false, e.toString(), null)))
     } finally {
         poolClient.release();
     }
