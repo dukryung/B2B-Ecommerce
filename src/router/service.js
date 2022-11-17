@@ -1,19 +1,12 @@
-const {Router} = require('express');
-const serviceUser = require('./services/user')
-const serviceLog = require('./services/log')
-const serviceProduct = require('./services/product')
-const serviceLogin = require('./services/login')
-const routes = new Object()
-const router = Router()
+const serviceUser = require('../services/user')
+const serviceLog = require('../services/log')
+const serviceProduct = require('../services/product')
+const service = new Object()
 
-routes.init = function (wsServer) {
-    //set http router
-    routes.router = router
-
-
+service.init = function (wsServer) {
     //set websocket server
-    routes.wsServer = wsServer
-    routes.wsServer.on("connection", (socket) => {
+    service.wsServer = wsServer
+    service.wsServer.on("connection", (socket) => {
         console.log('New client connected!');
         socket.on("message", (msg) => {
             msg = JSON.parse(msg)
@@ -27,14 +20,10 @@ routes.init = function (wsServer) {
         })
         socket.on('close', () => console.log('Client has disconnected!'));
     })
-
-
-    //
-    routes.router.get("/login", serviceLogin.readLogin)
 }
 
 
 
-module.exports = routes;
+module.exports = service;
 
 

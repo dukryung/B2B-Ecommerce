@@ -6,7 +6,8 @@ const serviceUser = require('./services/user')
 const serviceLog = require('./services/log')
 const serviceProduct = require('./services/product')
 const serviceLogin = require('./services/login')
-const routes = require('./routes');
+const serviceRoutes = require('./router/service');
+const loginRouter = require('./router/login')
 const cors = require('cors');
 
 
@@ -15,7 +16,7 @@ const serviceApp = express().use((req, res) => res.sendFile('/public/index.html'
     .listen(10002, () => console.log(`Listening on ${10002}`));
 
 const serviceServer = ws.init(serviceApp);
-routes.init(serviceServer);
+serviceRoutes.init(serviceServer);
 
 
 (async () => {
@@ -33,5 +34,6 @@ routes.init(serviceServer);
 
 
 //loginApp is for login.
-const loginApp = express().use(express.json()).use(cors).use(routes.router)
-http.Server(loginApp).listen("10005", () => console.log(`Listening on ${10005}`))
+const loginApp = express().use(cors()).use(loginRouter);
+const loginServer = http.createServer(loginApp);
+loginServer.listen(10005, () => console.log(`Listening on ${10005}`));
