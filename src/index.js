@@ -2,13 +2,15 @@ const express = require('express');
 const ws = require('./websocket')
 const http = require('http');
 const {getPool} = require('./utils/database');
+const {getSession} = require('./utils/redis')
 const serviceUser = require('./services/user')
 const serviceLog = require('./services/log')
 const serviceProduct = require('./services/product')
 const serviceLogin = require('./services/login')
 const serviceRoutes = require('./router/service');
-const loginRouter = require('./router/login')
+const loginRouter = require('./router/login');
 const cors = require('cors');
+const {getClient} = require("./utils/redis");
 
 
 //serviceApp implementation by using websocket.
@@ -22,6 +24,7 @@ serviceRoutes.init(serviceServer);
 (async () => {
         try {
             const pool = await getPool();
+
             serviceUser.init(pool)
             serviceLog.init(pool)
             serviceProduct.init(pool)
@@ -34,6 +37,6 @@ serviceRoutes.init(serviceServer);
 
 
 //loginApp is for login.
-const loginApp = express().use(cors()).use(loginRouter);
+const loginApp = express().use(getSession()).use(express.json()).use(cors()).use(loginRouter);
 const loginServer = http.createServer(loginApp);
 loginServer.listen(10005, () => console.log(`Listening on ${10005}`));
