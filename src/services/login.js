@@ -1,24 +1,22 @@
 const parse = require('../utils/parse')
 const login = new Object();
 const db = new Object();
-login.init = function (pool) {
+const redis = new Object();
+const expireHours = 24 * 60 * 60 * 1000
+login.init = function (pool, redisClient) {
     db.pool = pool
+    redis.client = redisClient
 
 }
 
 login.readIndex = async function (req, res) {
-    console.log("seq :", req.session)
-    if (req.session.key) {
-        console.log(req.session.key)
-    }
-    res.status(200).json("finish")
 }
 
 
 login.readLogin = async function (req, res) {
     const poolClient = await db.pool.connect();
+    await redis.client.connect();
     const id = req.body.id;
-    const sess = req.session;
 
     try {
         await poolClient.query('BEGIN');
@@ -26,9 +24,14 @@ login.readLogin = async function (req, res) {
                                              FROM users
                                              WHERE id = $1`, [id])
 
-        sess.name = data.name
-        //res.status(200).json(parse.resBody(true, null, "test"))
-        res.end('done');
+        const nowTime = new Date().getTime();
+
+        await redis.client.set(data.rows[0].name, JSON.stringify({expire: new Date(nowTime + expireHours).toISOString()}))
+
+        const redisData = await redis.client.get(data.rows[0].name, ["expire"])
+        console.log("redisData : ", redisData)
+
+        res.status(200).json(parse.resBody(true, null, "test"))
         await poolClient.query('COMMIT');
     } catch (e) {
         console.error(e)
@@ -37,6 +40,7 @@ login.readLogin = async function (req, res) {
 
     } finally {
         poolClient.release()
+        redis.client.disconnect()
     }
 
 }
