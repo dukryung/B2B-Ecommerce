@@ -17,18 +17,24 @@ login.readLogin = async function (req, res) {
     const poolClient = await db.pool.connect();
     await redis.client.connect();
     const id = req.body.id;
+    const email = req.body.email;
 
     try {
         await poolClient.query('BEGIN');
         const data = await poolClient.query(`SELECT id, name, attribute, authority, grade
                                              FROM users
-                                             WHERE id = $1`, [id])
+                                             WHERE id = $1
+                                               AND email = $2`, [id, email])
+
+        if (data.rows.length !== 1) {
+            throw 'cannot find data'
+        }
 
         const nowTime = new Date().getTime();
+        
+        await redis.client.set(email, JSON.stringify({expire: new Date(nowTime + expireHours).toISOString()}))
 
-        await redis.client.set(data.rows[0].name, JSON.stringify({expire: new Date(nowTime + expireHours).toISOString()}))
-
-        const redisData = await redis.client.get(data.rows[0].name, ["expire"])
+        const redisData = await redis.client.get(email, ["expire"])
         console.log("redisData : ", redisData)
 
         res.status(200).json(parse.resBody(true, null, "test"))

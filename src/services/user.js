@@ -32,7 +32,7 @@ user.readUsers = async function (socket, msg) {
 
 user.readUserById = async function (socket, msg) {
     const poolClient = await db.pool.connect();
-    console.log("msg : ",msg.id)
+    console.log("msg : ", msg.id)
     try {
         await poolClient.query('BEGIN');
         const data = await poolClient.query(`SELECT id, name, attribute, authority, grade
@@ -92,10 +92,10 @@ user.createUser = async function (socket, msg) {
     const poolClient = await db.pool.connect();
     try {
         await poolClient.query('BEGIN');
-        await poolClient.query(`INSERT INTO users (name, attribute, authority, create_time, update_time)
+        await poolClient.query(`INSERT INTO users (email, name, attribute, authority, create_time, update_time)
                                 VALUES ($1, $2,
-                                        $3, Now(),
-                                        Now()) RETURNING *`, [msg.name, msg.attribute, msg.authority])
+                                        $3, $4, Now(),
+                                        Now()) RETURNING *`, [msg.email, msg.name, msg.attribute, msg.authority])
         await poolClient.query('COMMIT');
         socket.send(JSON.stringify(parse.resBody(true, null, null)))
     } catch (e) {
