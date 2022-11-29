@@ -1,12 +1,10 @@
 const parse = require('../utils/parse')
 const login = new Object();
 const db = new Object();
-const redis = new Object();
-const expireHours = 24 * 60 * 60 * 1000
-login.init = function (pool, redisClient) {
-    db.pool = pool
-    redis.client = redisClient
+const session = require('../utils/session')
 
+login.init = function (pool) {
+    db.pool = pool
 }
 
 login.readIndex = async function (req, res) {
@@ -15,7 +13,6 @@ login.readIndex = async function (req, res) {
 
 login.readLogin = async function (req, res) {
     const poolClient = await db.pool.connect();
-    await redis.client.connect();
     const id = req.body.id;
     const email = req.body.email;
 
@@ -29,16 +26,13 @@ login.readLogin = async function (req, res) {
         if (data.rows.length !== 1) {
             throw 'cannot find data'
         }
+        await session.set(email)
+        console.log(await session.get(email))
 
-        const nowTime = new Date().getTime();
-        
-        await redis.client.set(email, JSON.stringify({expire: new Date(nowTime + expireHours).toISOString()}))
-
-        const redisData = await redis.client.get(email, ["expire"])
-        console.log("redisData : ", redisData)
-
-        res.status(200).json(parse.resBody(true, null, "test"))
         await poolClient.query('COMMIT');
+
+        res.redirect(`ws://localhost:10002/`)
+        //res.status(200).json(parse.resBody(true, null, "test"))
     } catch (e) {
         console.error(e)
         await poolClient.query('ROLLBACK');
@@ -46,7 +40,6 @@ login.readLogin = async function (req, res) {
 
     } finally {
         poolClient.release()
-        redis.client.disconnect()
     }
 
 }

@@ -1,4 +1,5 @@
 const parse = require('../utils/parse')
+const crypto = require('../utils/crypto')
 const user = new Object();
 const db = new Object();
 
@@ -90,12 +91,17 @@ user.updateUserById = async function (socket, msg) {
 }
 user.createUser = async function (socket, msg) {
     const poolClient = await db.pool.connect();
+
     try {
         await poolClient.query('BEGIN');
-        await poolClient.query(`INSERT INTO users (email, name, attribute, authority, create_time, update_time)
+
+        const hashedValue = await crypto.createHash(msg.password)
+        console.log("hashedValue : ",hashedValue)
+
+        await poolClient.query(`INSERT INTO users (email, name, password, attribute, authority, create_time, update_time)
                                 VALUES ($1, $2,
-                                        $3, $4, Now(),
-                                        Now()) RETURNING *`, [msg.email, msg.name, msg.attribute, msg.authority])
+                                        $3, $4, $5, Now(),
+                                        Now()) RETURNING *`, [msg.email, msg.name, hashedValue.hashed_value, msg.attribute, msg.authority])
         await poolClient.query('COMMIT');
         socket.send(JSON.stringify(parse.resBody(true, null, null)))
     } catch (e) {

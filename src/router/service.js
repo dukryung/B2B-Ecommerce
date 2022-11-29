@@ -8,6 +8,7 @@ service.init = function (wsServer) {
     service.wsServer = wsServer
     service.wsServer.on("connection", (socket) => {
         console.log('New client connected!');
+
         socket.on("message", (msg) => {
             msg = JSON.parse(msg)
             if (Reflect.has(serviceUser, msg.type)) {
@@ -18,6 +19,7 @@ service.init = function (wsServer) {
                 Reflect.apply(Reflect.get(serviceLog, msg.type), undefined, [socket, msg])
             }
         })
+
         socket.on('close', () => console.log('Client has disconnected!'));
     })
 }

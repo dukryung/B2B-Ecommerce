@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS public.users
 (
     id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
     name character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    password text COLLATE pg_catalog."default" NOT NULL,
     email character varying(30) COLLATE pg_catalog."default" NOT NULL,
     attribute integer NOT NULL,
     authority integer NOT NULL,
