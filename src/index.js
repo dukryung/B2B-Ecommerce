@@ -9,15 +9,11 @@ const serviceLogin = require('./services/login')
 const serviceRoutes = require('./router/service');
 const loginRouter = require('./router/login');
 const cors = require('cors');
-const redis = require('redis');
-const session = require('./utils/session')
+const Session = require('./utils/session')
 
-
-
-const redisClient = redis.createClient({host: "localhost", port: 6379});
 
 //serviceApp implementation by using websocket.
-const serviceApp = express().use((req, res) => res.sendFile('/public/index.html', {root: __dirname})).use(express.json()).use(cors).use(session.check)
+const serviceApp = express().use(express.json()).use(cors()).use(await new Session().then(session => session.check)).use((req, res) => res.sendFile('/public/index.html', {root: __dirname}))
     .listen(10002, () => console.log(`Listening on ${10002}`));
 const serviceServer = ws.init(serviceApp);
 serviceRoutes.init(serviceServer);
