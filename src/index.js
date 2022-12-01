@@ -9,11 +9,25 @@ const serviceLogin = require('./services/login')
 const serviceRoutes = require('./router/service');
 const loginRouter = require('./router/login');
 const cors = require('cors');
-const Session = require('./utils/session')
+const {Session} = require('./utils/session')
 
 
 //serviceApp implementation by using websocket.
-const serviceApp = express().use(express.json()).use(cors()).use(await new Session().then(session => session.check)).use((req, res) => res.sendFile('/public/index.html', {root: __dirname}))
+
+const serviceApp = express().use(express.json()).use(cors()).use(async (req, res, next) => {
+    sess = new Session()
+    try {
+        if (req.body.type === "createUser") next()
+        const isValid =  await sess.check(req.body.email, req.header.session)
+
+        if (!isValid) {
+            throw 'session invalid'
+        }
+        next()
+    } catch (e) {
+        console.error(e)
+    }
+}).use((req, res) => res.sendFile('/public/index.html', {root: __dirname}))
     .listen(10002, () => console.log(`Listening on ${10002}`));
 const serviceServer = ws.init(serviceApp);
 serviceRoutes.init(serviceServer);
